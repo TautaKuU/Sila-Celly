@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sila & Celly</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background-color: #fff;
+            color: #333;
+        }
+        /* Halaman Welcome */
+        
+        #welcome {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(to right, #b3e5fc, maroon);
+        }
+        
+        #welcome h1 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        #welcome p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        #start-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #e91e63;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        #gallery {
+            display: none;
+            background: linear-gradient(to right, #b3e5fc, maroon);
+        }
+        
+        header {
+            background: linear-gradient(to right, #b3e5fc, maroon);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Galeri masonry */
+        
+        .content {
+            column-count: 3;
+            column-gap: 4px;
+            padding: 6px;
+        }
+        
+        .media-item {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .media-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                column-count: 2;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content {
+                column-count: 1;
+            }
+        }
+        
+        audio {
+            display: none;
+        }
+        
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        #lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 10px;
+        }
+        
+        #close-btn,
+        .arrow-btn {
+            position: absolute;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        #close-btn {
+            top: 20px;
+            right: 20px;
+        }
+        
+        .arrow-btn {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        #prev-btn {
+            left: 20px;
+        }
+        
+        #next-btn {
+            right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Welcome Section -->
+    <section id="welcome">
+        <h1>Welcome to our memories 💫</h1>
+        <button id="start-btn">Click here!</button>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery">
+        <header>
+            <h1>Our Favorite Memories</h1>
+        </header>
+        <div id="images" class="content"></div>
+    </section>
+
+    <!-- Audio -->
+    <audio id="background-music" loop>
+    <source src="media/song.mp3" type="audio/mp3">
+  </audio>
+
+    <!-- Lightbox -->
+    <div id="lightbox">
+        <button id="close-btn">×</button>
+        <button id="prev-btn" class="arrow-btn">‹</button>
+        <img id="lightbox-image" src="" alt="Lightbox Image" />
+        <button id="next-btn" class="arrow-btn">›</button>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const welcomePage = document.getElementById('welcome');
+        const galleryPage = document.getElementById('gallery');
+        const imageContainer = document.getElementById('images');
+        const music = document.getElementById('background-music');
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const closeBtn = document.getElementById('close-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        let imageList = [];
+        let currentIndex = 0;
+
+        const checkImageExists = (url, callback) => {
+            const img = new Image();
+            img.onload = () => callback(true, url);
+            img.onerror = () => callback(false, url);
+            img.src = url;
+        };
+
+        startBtn.addEventListener('click', () => {
+            welcomePage.style.display = 'none';
+            galleryPage.style.display = 'block';
+
+            music.volume = 0.5;
+            music.play().catch(() => alert("Silakan aktifkan audio Anda."));
+
+            for (let i = 1; i <= 100; i++) {
+                const path = `media/${i}.jpg`;
+                checkImageExists(path, (exists, url) => {
+                    if (exists) {
+                        const index = imageList.length;
+                        const item = document.createElement("div");
+                        item.className = "media-item";
+                        item.innerHTML = `<img src="${url}" onclick="openLightbox(${index})" alt="img-${index}">`;
+                        imageList.push(url);
+                        imageContainer.appendChild(item);
+                    }
+                });
+            }
+        });
+
+        window.openLightbox = function(index) {
+            currentIndex = index;
+            lightboxImage.src = imageList[index];
+            lightbox.style.display = 'flex';
+        }
+
+        closeBtn.addEventListener('click', () => {
+            lightbox.style.display = 'none';
+            lightboxImage.src = '';
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % imageList.length;
+            lightboxImage.src = imageList[currentIndex];
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+            lightboxImage.src = imageList[currentIndex];
+        });
+    </script>
+</body>
+
+</html>
